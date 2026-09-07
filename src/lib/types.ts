@@ -1,4 +1,6 @@
 export type Message = {
-  role: "user" | "assistant";
+  role: "system" | "user" | "assistant";
   content: string;
+  thinking?: string;
+  showThinking?: boolean;
 };

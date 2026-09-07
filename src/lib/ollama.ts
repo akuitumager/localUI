@@ -1,39 +1,41 @@
-const OLLAMA_URL = "http://localhost:11434";
-
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-};
+const BACKEND_URL = "http://localhost:3001/api/ollama";
+import { Message } from "./types";
 
 export type OllamaModel = {
+
   name: string;
+
+  supportsThinking: boolean;
+
 };
 
 export async function getOllamaModels(): Promise<OllamaModel[]> {
-  const response = await fetch(`${OLLAMA_URL}/api/tags`);
+  const response = await fetch(`${BACKEND_URL}/models`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch Ollama models");
   }
 
   const data = await response.json();
-
   return data.models;
 }
 
 export async function chatWithOllama(
   model: string,
   messages: Message[],
-  onChunk: (chunk: string) => void,
+  onChunk: (chunk: string, thinking?: string) => void,
   signal?: AbortSignal,
 ) {
+
+  
+
   const payload = {
     model,
     messages,
     stream: true,
   };
 
-  const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+  const response = await fetch(`${BACKEND_URL}/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -57,9 +59,9 @@ export async function chatWithOllama(
 
   while (true) {
     if (signal?.aborted) {
-    await reader.cancel();
-    break;
-  }
+      await reader.cancel();
+      break;
+    }
 
     const { value, done } = await reader.read();
 
@@ -74,10 +76,18 @@ export async function chatWithOllama(
     for (const line of lines) {
       if (!line.trim()) continue;
 
-      const data = JSON.parse(line);
+      try {
+        const data = JSON.parse(line);
 
-      if (data.message?.content) {
-        onChunk(data.message.content);
+        if (data.message?.thinking) {
+          onChunk("", data.message.thinking);
+        }
+
+        if (data.message?.content) {
+          onChunk(data.message.content);
+        }
+      } catch (err) {
+
       }
     }
   }

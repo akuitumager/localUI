@@ -31,7 +31,7 @@ export const Header = ({
       <div>
         <Image
           src="/Android Small - 1(2).svg"
-          alt="Xtarget"
+          alt="Locally"
           width={200}
           height={100}
         />

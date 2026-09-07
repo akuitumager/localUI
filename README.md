@@ -1,7 +1,1 @@
-# this is an interface for local AI this app called **Xtarget**
-
-```bash
-npm run dev
-```
-
-for running it at localhost
+un done project,ai interface,i use arch btw
